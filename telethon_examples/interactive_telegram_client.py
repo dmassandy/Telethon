@@ -99,6 +99,7 @@ class InteractiveTelegramClient(TelegramClient):
                 # Display them so the user can choose
                 for i, entity in enumerate(entities, start=1):
                     sprint('{}. {}'.format(i, get_display_name(entity)))
+                    print(str(entity))
 
                 # Let the user decide who they want to talk to
                 print()
@@ -216,8 +217,9 @@ class InteractiveTelegramClient(TelegramClient):
 
                 # Send chat message (if any)
                 elif msg:
-                    self.send_message(
+                    msg_id = self.send_message(
                         entity, msg, no_web_page=True)
+                    print('Send message id {}'.format(msg_id))
 
     def send_photo(self, path, entity):
         print('Uploading {}...'.format(path))
@@ -225,8 +227,9 @@ class InteractiveTelegramClient(TelegramClient):
             path, progress_callback=self.upload_progress_callback)
 
         # After we have the handle to the uploaded file, send it to our peer
-        self.send_photo_file(input_file, entity)
+        msg_id = self.send_photo_file(input_file, entity)
         print('Photo sent!')
+        print('Send message id {}'.format(msg_id))
 
     def send_document(self, path, entity):
         print('Uploading {}...'.format(path))
@@ -234,8 +237,9 @@ class InteractiveTelegramClient(TelegramClient):
             path, progress_callback=self.upload_progress_callback)
 
         # After we have the handle to the uploaded file, send it to our peer
-        self.send_document_file(input_file, entity)
+        msg_id = self.send_document_file(input_file, entity)
         print('Document sent!')
+        print('Send message id {}'.format(msg_id))
 
     def download_media(self, media_id):
         try:
@@ -275,6 +279,8 @@ class InteractiveTelegramClient(TelegramClient):
 
     @staticmethod
     def update_handler(update_object):
+        print('received update: {}'.format(type(update_object).__name__))
+        print(str(update_object))
         if type(update_object) is UpdateShortMessage:
             if update_object.out:
                 sprint('You sent {} to user #{}'.format(

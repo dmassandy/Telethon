@@ -44,7 +44,7 @@ from .tl.types import (
     InputDocumentFileLocation, InputFileLocation,
     InputMediaUploadedDocument, InputMediaUploadedPhoto, InputPeerEmpty,
     MessageMediaContact, MessageMediaDocument, MessageMediaPhoto,
-    UserProfilePhotoEmpty, InputUserSelf)
+    UserProfilePhotoEmpty, InputUserSelf, UpdatesTg, UpdateMessageID)
 
 from .utils import find_user_or_chat, get_input_peer, get_extension
 
@@ -441,8 +441,8 @@ class TelegramClient(TelegramBareClient):
             entities=[],
             no_webpage=no_web_page
         )
-        self.invoke(request)
-        return request.random_id
+        result = self.invoke(request)
+        return result.id
 
     def get_message_history(self,
                             entity,
@@ -517,8 +517,10 @@ class TelegramClient(TelegramBareClient):
     def send_photo_file(self, input_file, entity, caption=''):
         """Sends a previously uploaded input_file
            (which should be a photo) to the given entity (or input peer)"""
-        self.send_media_file(
+        msg_id = self.send_media_file(
             InputMediaUploadedPhoto(input_file, caption), entity)
+        
+        return msg_id
 
     def send_document_file(self, input_file, entity, caption=''):
         """Sends a previously uploaded input_file
@@ -537,20 +539,26 @@ class TelegramClient(TelegramBareClient):
         # contains arbitrary binary data.'
         if not mime_type:
             mime_type = 'application/octet-stream'
-        self.send_media_file(
+        msg_id = self.send_media_file(
             InputMediaUploadedDocument(
                 file=input_file,
                 mime_type=mime_type,
                 attributes=attributes,
                 caption=caption),
             entity)
+        return msg_id
 
     def send_media_file(self, input_media, entity):
         """Sends any input_media (contact, document, photo...) to the given entity"""
-        self.invoke(SendMediaRequest(
+        result = self.invoke(SendMediaRequest(
             peer=get_input_peer(entity),
             media=input_media
         ))
+        msg_id = None
+        if isinstance(result, UpdatesTg) :
+            if result.updates is not None:
+                msg_id = next((update.id for update in result.updates if isinstance(update, UpdateMessageID)), None)
+        return msg_id
 
     # endregion
 
