@@ -65,7 +65,8 @@ class TelegramClient(TelegramBareClient):
     def __init__(self, session, api_id, api_hash, proxy=None,
                  device_model=None, system_version=None,
                  app_version=None, lang_code=None,
-                 timeout=timedelta(seconds=5)):
+                 timeout=timedelta(seconds=5),
+                 session_base_path=None):
         """Initializes the Telegram client with the specified API ID and Hash.
 
            Session can either be a `str` object (filename for the .session)
@@ -87,7 +88,7 @@ class TelegramClient(TelegramBareClient):
         # Determine what session object we have
         # TODO JsonSession until migration is complete (by v1.0)
         if isinstance(session, str) or session is None:
-            session = JsonSession.try_load_or_create_new(session)
+            session = JsonSession.try_load_or_create_new(session, base_path=session_base_path)
         elif not isinstance(session, Session):
             raise ValueError(
                 'The given session must be a str or a Session instance.')
@@ -104,6 +105,8 @@ class TelegramClient(TelegramBareClient):
 
         self._next_ping_at = 0
         self.ping_interval = 60  # Seconds
+
+        self._session_base_path = session_base_path
 
         # Used on connection - the user may modify these and reconnect
         if device_model:
@@ -192,7 +195,7 @@ class TelegramClient(TelegramBareClient):
             #
             # Construct this session with the connection parameters
             # (system version, device model...) from the current one.
-            session = JsonSession(self.session)
+            session = JsonSession(self.session, base_path=self._session_base_path)
             session.server_address = dc.ip_address
             session.port = dc.port
             client = TelegramBareClient(

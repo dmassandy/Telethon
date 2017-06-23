@@ -44,11 +44,11 @@ class InteractiveTelegramClient(TelegramClient):
        talking to people, downloading media, and receiving updates.
     """
     def __init__(self, session_user_id, user_phone, api_id, api_hash,
-                 proxy=None):
+                 proxy=None, session_base_path=None):
         print_title('Initialization')
 
         print('Initializing interactive example...')
-        super().__init__(session_user_id, api_id, api_hash, proxy)
+        super().__init__(session_user_id, api_id, api_hash, proxy=proxy, session_base_path=session_base_path)
 
         # Store all the found media in memory here,
         # so it can be downloaded if the user wants

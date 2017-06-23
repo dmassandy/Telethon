@@ -134,11 +134,15 @@ class JsonSession:
         self.salt = 0  # Unsigned long
         self.time_offset = 0
         self.last_message_id = 0  # Long
+        self.base_path = None
 
     def save(self):
         """Saves the current session object as session_user_id.session"""
         if self.session_user_id:
-            with open('{}.session'.format(self.session_user_id), 'w') as file:
+            path = '{}.session'.format(self.session_user_id)
+            if self.base_path is not None:
+                path = os.path.join(self.base_path, path)
+            with open(path, 'w') as file:
                 json.dump({
                     'id': self.id,
                     'port': self.port,
@@ -154,29 +158,42 @@ class JsonSession:
     def delete(self):
         """Deletes the current session file"""
         try:
-            os.remove('{}.session'.format(self.session_user_id))
+            path = '{}.session'.format(self.session_user_id)
+            if self.base_path is not None:
+                path = os.path.join(self.base_path, path)
+            os.remove(path)
             return True
         except OSError:
             return False
 
     @staticmethod
-    def list_sessions():
+    def list_sessions(base_path=None):
         """Lists all the sessions of the users who have ever connected
            using this client and never logged out
         """
+        path = '.'
+        if base_path is not None:
+            path = base_path
         return [os.path.splitext(os.path.basename(f))[0]
-                for f in os.listdir('.') if f.endswith('.session')]
+                for f in os.listdir(path) if f.endswith('.session')]
 
     @staticmethod
-    def try_load_or_create_new(session_user_id):
+    def try_load_or_create_new(session_user_id, base_path=None):
         """Loads a saved session_user_id.session or creates a new one.
            If session_user_id=None, later .save()'s will have no effect.
         """
         if session_user_id is None:
-            return JsonSession(None)
+            jsonSession = JsonSession(None)
+            jsonSession.base_path = base_path
+            return jsonSession
         else:
-            path = '{}.session'.format(session_user_id)
             result = JsonSession(session_user_id)
+
+            path = '{}.session'.format(session_user_id)
+            if base_path is not None:
+                path = os.path.join(base_path, path)
+                result.base_path = base_path
+
             if not file_exists(path):
                 return result
 

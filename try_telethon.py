@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import traceback
+import os
 
 from telethon_examples.interactive_telegram_client \
     import InteractiveTelegramClient
@@ -24,6 +25,7 @@ def load_settings(path='api/settings'):
 if __name__ == '__main__':
     # Load the settings and initialize the client
     settings = load_settings()
+    session_base_path = os.path.join(os.path.dirname(__file__), 'sessions')
     kwargs = {}
     if settings.get('socks_proxy'):
         import socks  # $ pip install pysocks
@@ -35,6 +37,7 @@ if __name__ == '__main__':
         user_phone=str(settings['user_phone']),
         api_id=settings['api_id'],
         api_hash=str(settings['api_hash']),
+        session_base_path=session_base_path,
         **kwargs)
 
     print('Initialization done!')
