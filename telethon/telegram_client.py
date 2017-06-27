@@ -445,7 +445,13 @@ class TelegramClient(TelegramBareClient):
             no_webpage=no_web_page
         )
         result = self.invoke(request)
-        return result.id
+        msg_id = None
+        if isinstance(result, UpdatesTg) :
+            if result.updates is not None:
+                msg_id = next((update.id for update in result.updates if isinstance(update, UpdateMessageID)), None)
+        elif hasattr(result, 'id'):
+            msg_id = result.id
+        return msg_id
 
     def get_message_history(self,
                             entity,
