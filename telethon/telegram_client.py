@@ -451,6 +451,10 @@ class TelegramClient(TelegramBareClient):
                 msg_id = next((update.id for update in result.updates if isinstance(update, UpdateMessageID)), None)
         elif hasattr(result, 'id'):
             msg_id = result.id
+        
+        if msg_id is None: # log warning if msg_id not found
+            self._logger.warning('Send Text not getting message id on the result : {}'.format(str(result)))
+
         return msg_id
 
     def get_message_history(self,
@@ -567,6 +571,8 @@ class TelegramClient(TelegramBareClient):
         if isinstance(result, UpdatesTg) :
             if result.updates is not None:
                 msg_id = next((update.id for update in result.updates if isinstance(update, UpdateMessageID)), None)
+        if msg_id is None: # log warning if msg_id not found
+            self._logger.warning('Send Media not getting message id on the result : {}'.format(str(result)))
         return msg_id
 
     # endregion
