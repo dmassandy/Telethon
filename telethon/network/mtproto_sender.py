@@ -100,7 +100,7 @@ class MtProtoSender:
             # or, if there is no request, until we read an update
             while (request and not request.confirm_received) or \
                     (not request and not updates):
-                self._logger.info('Trying to .receive() the request result...')
+                self._logger.debug('Trying to .receive() the request result...')
                 seq, body = self.transport.receive(**kwargs)
                 message, remote_msg_id, remote_seq = self._decode_msg(body)
 
@@ -114,7 +114,7 @@ class MtProtoSender:
                     self._pending_receive.remove(request)
                 except ValueError: pass
 
-            self._logger.info('Request result received')
+            self._logger.debug('Request result received')
         self._logger.debug('receive() released the lock')
 
     def receive_updates(self, **kwargs):
@@ -263,7 +263,7 @@ class MtProtoSender:
             request = next(r for r in self._pending_receive
                            if r.request_msg_id == received_msg_id)
 
-            self._logger.warning('Pong confirmed a request')
+            self._logger.debug('Pong confirmed a request')
             request.confirm_received = True
         except StopIteration: pass
 
